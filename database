@@ -1,0 +1,215 @@
+CREATE DATABASE SocialMediaPlatformS;
+USE SocialMediaPlatformS;
+create table users(
+	userID int identity primary key NOT NULL,
+	UserName NVARCHAR(100) NOT NULL,
+	Email NVARCHAR(100) UNIQUE NOT NULL,
+	DOB DATE NOT NULL,
+	Gender NVARCHAR(20) CHECK(Gender IN('MALE', 'FEMALE')) NOT NULL,
+	JoinDate DATETIME DEFAULT  GETUTCDATE() NOT NULL
+);
+
+
+CREATE TABLE POSTS(
+	PostID INT IDENTITY PRIMARY KEY  NOT NULL,
+	Content NVARCHAR(200) NOT NULL,
+	PostDate DATETIME DEFAULT GETUTCDATE() NOT NULL,
+	Visibility NVARCHAR(25) CHECK(Visibility IN('PUBLIB', 'PRIVATE')) NOT NULL,
+	UserID INT NOT NULL,
+	FOREIGN KEY(UserID) REFERENCES users(userID)
+);
+
+CREATE TABLE Interactions(
+	InteractionsID INT IDENTITY PRIMARY KEY NOT NULL,
+	Type NVARCHAR(20) CHECK(Type IN('LIKE', 'COMMENT', 'SHARE')) NOT NULL,
+	InteractionsDate DATETIME DEFAULT GETUTCDATE() NOT NULL,
+	UserID INT NOT NULL,
+	FOREIGN KEY(UserID) REFERENCES users(userID),
+	PostID INT NOT NULL,
+	FOREIGN KEY(PostID) REFERENCES POSTS(PostID)
+);
+
+CREATE TABLE Comment(
+	CommentID INT IDENTITY PRIMARY KEY NOT NULL,
+	CONTENT NVARCHAR(250) NOT NULL,
+	CommentDate DATETIME DEFAULT GETUTCDATE() NOT NULL,
+	USERID INT NOT NULL,
+	FOREIGN KEY(USERID) REFERENCES users(userID),
+	POSTID INT NOT NULL,
+	FOREIGN KEY(POSTID) REFERENCES POSTS(PostID)
+);
+
+CREATE TABLE UserPostRelationship(
+	UserID INT  NOT NULL,
+	postID INT NOT NULL,
+	PRIMARY KEY(UserID, postID),
+	FOREIGN KEY(UserID) REFERENCES users(userID),
+
+
+	FOREIGN KEY(postID) REFERENCES POSTS(PostID)
+
+);
+
+INSERT INTO users(UserName, Email, Gender, DOB) VALUES
+('Lama Ahmed', 'lamaahmed@gmail.com', 'female', '2001-11-3'),
+('Waleed Ali', 'waleed12@gmail', 'male', '2005-12-1'),
+('Doaa Hesham', 'doaa111!@gmail.com', 'female', '2000-8-1');
+select* from  users;
+
+drop table users;
+
+INSERT INTO POSTS(Content, Visibility, UserID) VALUES
+('HELLO THAT IS MY FIRST POST', 'PRIVATE', 1),
+('RAMADAN KAREEM', 'PUBLIB', 2),
+('كل عام وانتم بخير 🌙', 'PUBLIB', 3);
+
+SELECT* FROM POSTS;
+
+INSERT INTO Comment(CONTENT, USERID, POSTID) VALUES
+('HELLO ,HOW ARE YOU', 1, 1),
+('😍وانت بخير', 3, 3);
+
+
+SELECT* FROM Comment;
+
+
+
+INSERT INTO Interactions(Type, UserID, PostID) VALUES
+('LIKE', 1, 1),
+('SHARE', 2, 2);
+
+
+SELECT* FROM Interactions;
+
+drop database SocialMediaPlatformS;
+
+
+-- task b
+
+CREATE DATABASE OnlineShoppingSystem;
+USE OnlineShoppingSystem;
+create table Customer(
+ CustomerID int identity primary key NOT NULL,
+ Name NVARCHAR(100) NOT NULL,
+ Email NVARCHAR(100) UNIQUE NOT NULL,
+ PhoneNum NVARCHAR(20) NOT NULL,
+ 
+ Address NVARCHAR(100)  NOT NULL
+ 
+);
+
+
+CREATE TABLE Products(
+ProductID INT IDENTITY PRIMARY KEY  NOT NULL,
+Name NVARCHAR(20) NOT NULL,
+Category nvarchar(30)NOT NULL,
+Description NVARCHAR(300)  NOT NULL,
+price Decimal(10,2) NOT NULL
+
+);
+alter table Products
+add rating Decimal(3,2) default 0 not null,
+Catogory nvarchar(30) default 'new' not null ,
+drop columns rating,
+
+drop table Products
+where Name!=null;
+
+--delete all rows from product
+
+CREATE TABLE Orders(
+OrderID INT IDENTITY PRIMARY KEY NOT NULL,
+OrderDate datetime default getutcdate() not null,
+TotalAmount INT CHECK(TotalAmount > 0) default 0 NOT NULL,
+STATUS NVARCHAR(20) CHECK(STATUS IN('PENDING','SHIPPED','DELIVERD')) DEFAULT 'PENDING' NOT NULL,
+CUSTOMERID INT NOT NULL,
+FOREIGN KEY (CUSTOMERID) REFERENCES Customer(CustomerID)
+
+);
+
+update Orders
+set OrderDate= GETUTCDATE()  
+where OrderID >0; 
+
+CREATE TABLE ORDERDETAIL(
+ORDERDETAILSID INT IDENTITY PRIMARY KEY NOT NULL ,
+ordersID int not null,
+FOREIGN KEY (ordersID) REFERENCES Orders(OrderID),
+QUANTITY INT NOT NULL,
+price Decimal(10,2) NOT NULL
+);
+
+CREATE TABLE Supplier(
+SupplierID INT IDENTITY PRIMARY KEY NOT NULL ,
+ContactInfo NVARCHAR(100) NOT NULL,
+Name NVARCHAR(20) NOT NULL
+
+);
+
+CREATE TABLE ProductOrderDetailsRelationship(
+ProductId INT IDENTITY PRIMARY KEY  NOT NULL,
+ORDERDETAILSId INT NOT NULL,
+
+FOREIGN KEY(ProductId) REFERENCES ProductS(ProductID),
+
+
+FOREIGN KEY(ORDERDETAILSId) REFERENCES ORDERDETAIL(ORDERDETAILSID)
+
+);
+CREATE TABLE ProductOrderRelationship(
+ProductId INT   NOT NULL,
+ORDERId INT NOT NULL,
+PRIMARY KEY(ProductId,ORDERId),
+FOREIGN KEY(ProductId) REFERENCES ProductS(ProductID),
+
+
+FOREIGN KEY(ORDERId) REFERENCES Orders(OrderID)
+
+);
+
+CREATE TABLE ProductSupplierRelationship(
+ProductId INT   NOT NULL,
+SupplierId INT NOT NULL,
+PRIMARY KEY(ProductId,SupplierId),
+FOREIGN KEY(ProductId) REFERENCES ProductS(ProductID),
+
+
+FOREIGN KEY(SupplierId) REFERENCES Supplier(SupplierID)
+
+);
+
+INSERT INTO Customer(Name,Email,PhoneNum,Address) VALUES 
+('Lama Ahmed','lamaahmed@gmail.com','0114321641','maady'),
+('Waleed Ali','waleed12@gmail','01013287112','Nasr city'),
+('Doaa Hesham','doaa111!@gmail.com','01110788432','Giza');
+select *  from  Customer;
+
+INSERT INTO Products (Name,Category,Description,price) VALUES 
+('Smsung mobile','smartphone','smart phone with elgent design',12000.0),
+('Dell laptop','desktop devices','laptop with big screen',25000),
+('earbuds','earphones','wireless earbuds with higher quality',6000.0);
+
+SELECT * FROM Products;
+
+INSERT INTO Orders(STATUS,TotalAmount,CUSTOMERID) VALUES
+('PENDING',1,3),
+('DELIVERD',1,2);
+
+
+SELECT * FROM Orders;
+
+
+
+INSERT INTO ORDERDETAIL(QUANTITY,price,ordersID) VALUES
+(1,6000,1),
+(2,25000,2);
+
+
+SELECT * FROM ORDERDETAIL;
+
+INSERT INTO Supplier(ContactInfo,Name) VALUES
+('ahmedali@gmail.com','Ahmed Ali'),
+('esraafoaad@gmail.com','Esraa Foaad');
+
+
+SELECT * FROM Supplier;
